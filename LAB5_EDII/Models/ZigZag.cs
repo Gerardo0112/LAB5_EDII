@@ -10,7 +10,7 @@ namespace LAB5_EDII.Models
     {
         private static string routeDirectory = Environment.CurrentDirectory;
 
-        //Cifrado Cesar.
+        //Cifrado ZigZag.
         public static void Cipher(NumbersDataTaken info)
         {
             using (var reader = new BinaryReader(info.File.OpenReadStream()))
@@ -77,6 +77,106 @@ namespace LAB5_EDII.Models
                                 mensaje[i].Add((byte)0);
                             }
                             writer.Write(mensaje[i].ToArray());
+                        }
+                    }
+                }
+            }
+        }
+
+        //Decifrado ZigZag.
+        public static void Decipher(NumbersDataTaken info)
+        {
+            using (var reader = new BinaryReader(info.File.OpenReadStream()))
+            {
+                //Creacion archivo .txt.
+                using (var streamWriter = new FileStream($"{info.Name}.txt", FileMode.OpenOrCreate))
+                {
+                    using (var writer = new BinaryWriter(streamWriter))
+                    {
+                        var GrupoOlas = (2 * info.levels) - 2;
+                        var cantOlas = Convert.ToInt32(reader.BaseStream.Length) / GrupoOlas;
+                        var intermedios = (Convert.ToInt32(reader.BaseStream.Length) - (2 * cantOlas)) / (info.levels - 2);
+
+                        var pos = 0;
+                        var contNivel = 0;
+                        var contIntermedio = 0;
+
+                        var mensaje = new Queue<byte>[info.levels];
+
+                        for (int i = 0; i < info.levels; i++)
+                        {
+                            mensaje[i] = new Queue<byte>();
+                        }
+
+                        //Buffer de lectura.
+                        var bufferLength = 100000;
+                        var byteBuffer = new byte[bufferLength];
+
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
+                        {
+                            byteBuffer = reader.ReadBytes(bufferLength);
+                            foreach (var caracter in byteBuffer)
+                            {
+                                if (contNivel == info.levels - 1)
+                                {
+                                    mensaje[contNivel].Enqueue(caracter);
+                                }
+                                else
+                                {
+                                    if (pos < cantOlas)
+                                    {
+                                        mensaje[0].Enqueue(caracter);
+                                    }
+                                    else if (pos == cantOlas)
+                                    {
+                                        contNivel++;
+                                        mensaje[contNivel].Enqueue(caracter);
+                                        contIntermedio = 1;
+                                    }
+                                    else if (contIntermedio < intermedios)
+                                    {
+                                        mensaje[contNivel].Enqueue(caracter);
+                                        contIntermedio++;
+                                    }
+                                    else
+                                    {
+                                        contNivel++;
+                                        mensaje[contNivel].Enqueue(caracter);
+                                        contIntermedio = 1;
+                                    }
+                                    pos++;
+                                }
+                            }
+                        }
+
+                        contNivel = 0;
+                        var direccion = true;
+
+                        //Verdadero hacia abajo y falso hacia arriba.
+                        while (mensaje[1].Count() != 0 || (info.levels == 2 && mensaje[1].Count() != 0))
+                        {
+                            if (contNivel == 0)
+                            {
+                                writer.Write(mensaje[contNivel].Dequeue());
+                                contNivel = 1;
+                                direccion = true;
+                            }
+                            else if (contNivel < info.levels - 1 && direccion)
+                            {
+                                writer.Write(mensaje[contNivel].Dequeue());
+                                contNivel++;
+                            }
+                            else if (contNivel > 0 && !direccion)
+                            {
+                                writer.Write(mensaje[contNivel].Dequeue());
+                                contNivel--;
+                            }
+                            else if (contNivel == info.levels - 1)
+                            {
+                                writer.Write(mensaje[contNivel].Dequeue());
+                                contNivel = info.levels - 2;
+                                direccion = false;
+                            }
                         }
                     }
                 }
