@@ -69,16 +69,18 @@ namespace LAB5_EDII.Models
         }
 
         //Cifrado Cesar.
-        public static void Cifrar(ValuesDataTaken info)
+        public static void Cipher(ValuesDataTaken info)
         {
             ObtenerDic(info.word, 1);
 
             using (var reader = new BinaryReader(info.File.OpenReadStream()))
             {
+                //Creacion archivo .csr.
                 using (var streamWriter = new FileStream($"{info.Name}.csr", FileMode.OpenOrCreate))
                 {
                     using (var writer = new BinaryWriter(streamWriter))
                     {
+                        //Buffer de lectura.
                         var bufferLength = 10000;
                         var byteBuffer = new byte[bufferLength];
                         while (reader.BaseStream.Position != reader.BaseStream.Length)
@@ -108,16 +110,18 @@ namespace LAB5_EDII.Models
         }
 
         //Decifrado Cesar
-        public static void Decifrar(ValuesDataTaken info)
+        public static void Decipher(ValuesDataTaken info)
         {
             ObtenerDic(info.word, 2);
 
             using (var reader = new BinaryReader(info.File.OpenReadStream()))
             {
+                //Creacion archivo .txt.
                 using (var streamWriter = new FileStream($"{info.Name}.txt", FileMode.OpenOrCreate))
                 {
                     using (var writer = new BinaryWriter(streamWriter))
                     {
+                        //Buffer de lectura.
                         var bufferLength = 10000;
                         var byteBuffer = new byte[bufferLength];
                         while (reader.BaseStream.Position != reader.BaseStream.Length)
