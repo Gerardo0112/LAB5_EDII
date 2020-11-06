@@ -106,5 +106,44 @@ namespace LAB5_EDII.Models
                 }
             }
         }
+
+        //Decifrado Cesar
+        public static void Decifrar(ValuesDataTaken info)
+        {
+            ObtenerDic(info.word, 2);
+
+            using (var reader = new BinaryReader(info.File.OpenReadStream()))
+            {
+                using (var streamWriter = new FileStream($"{info.Name}.txt", FileMode.OpenOrCreate))
+                {
+                    using (var writer = new BinaryWriter(streamWriter))
+                    {
+                        var bufferLength = 10000;
+                        var byteBuffer = new byte[bufferLength];
+                        while (reader.BaseStream.Position != reader.BaseStream.Length)
+                        {
+                            byteBuffer = reader.ReadBytes(bufferLength);
+
+                            foreach (var caracter in byteBuffer)
+                            {
+                                var actual = Convert.ToInt32(caracter);
+                                if (actual >= 65 && actual <= 90)
+                                {
+                                    writer.Write((byte)alfa[actual]);
+                                }
+                                else if (actual >= 97 && actual <= 122)
+                                {
+                                    writer.Write((byte)(alfa[actual - 32] + 32));
+                                }
+                                else
+                                {
+                                    writer.Write(caracter);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
